@@ -1,28 +1,35 @@
 <template>
   <q-page class="flex flex-center">
-
-<p>My name is {{ name }} and im {{ age }}'s old' </p>
-  <q-btn @click="handleClick">Tryk</q-btn>
+    <div class="q-pa-md">
+      <div class="row">
+        <p>My name is {{ name }} and im {{ age }}'s old'</p>
+        <q-btn @click="handleClick">Tryk</q-btn>
+        <q-input v-model="text" label="Standard" />
+      </div>
+    </div>
   </q-page>
 </template>
 
 <script>
-import { defineComponent } from 'vue';
+import { defineComponent, ref } from "vue";
 
 export default defineComponent({
-  name: 'TestPage',
+  name: "TestPage",
   setup() {
-    console.log('setup')
+    // const para = ref(null)
 
-    let name = 'stefan'
-    let age = 30
+    const name = ref("stefan");
+    const age = ref(30);
 
     const handleClick = () => {
-      console.log('you clicked me');
-    }
+      // console.log(para, para.value)
+      // para.value.classList.add('test')
+      // para.value.textContent = "Dette ændrede sig"
+      name.value = "John";
+      age.value = 27;
+    };
 
-    return { name, age, handleClick }
-
-  }
-})
+    return { name, age, handleClick };
+  },
+});
 </script>
