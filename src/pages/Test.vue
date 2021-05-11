@@ -1,12 +1,20 @@
 <template>
-  <q-page class="flex flex-center">
-    <div class="q-pa-md">
-      <div class="row">
-        <p>My name is {{ name }} and im {{ age }}'s old'</p>
-        <q-btn @click="handleClick">Tryk</q-btn>
-        <q-input v-model="text" label="Standard" />
+  <q-page class="">
+    <div class="row">
+      <div class="q-px-md q-pt-md flex">
+        <div class="row">
+          <p>My name is {{ name }} and im {{ age }}'s old'</p>
+        </div>
+        <div class="row">
+          <q-btn @click="handleClick">Tryk</q-btn>
+          <q-btn @click="age++">INcrease</q-btn>
+          <q-btn @click="age--">Decrease</q-btn>
+        </div>
+
+        <q-input type="text" v-model="name" label="Standard" />
       </div>
     </div>
+
   </q-page>
 </template>
 
