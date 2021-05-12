@@ -1,6 +1,6 @@
 <template>
   <q-page class="relative-position">
-    <q-scroll-area class="absolute fullscreen">
+    <q-scroll-area class="absolute full-width full-height">
       <div class="q-py-lg q-px-md row items-end q-col-gutter-md">
         <div class="col">
           <q-input
@@ -46,7 +46,7 @@
         >
           <q-item
             v-for="qweet in qweets"
-            :key="qweet.date"
+            :key="qweet.id"
             class="qweetStyle q-py-md"
           >
             <q-item-section avatar top>
@@ -84,7 +84,14 @@
                   flat
                   round
                 />
-                <q-btn color="grey" icon="far fa-heart" size="sm" flat round />
+                <q-btn
+                  @click="toggleLiked(qweet)"
+                  :color="qweet.liked ? 'accent' : 'grey'"
+                  size="sm"
+                  flat
+                  round
+                  :icon="qweet.liked ? 'fas fa-heart' : 'far fa-heart'"
+                />
                 <q-btn
                   @click="deleteQweet(qweet)"
                   color="grey"
@@ -114,15 +121,19 @@ export default defineComponent({
   setup() {
     const newQweetContent = ref("");
     const qweets = ref([
-      /*  {
+      /*       {
+        id: "ID1",
         content:
           "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi fugit qui exercitationem nisi, voluptates amet esse accusantium! Eaque debitis iure quidem nobis praesentium labore ratione, adipisci placeat pariatur doloribus assumenda.",
         date: 1620720167152,
+        liked: false,
       },
       {
+        id: "ID2",
         content:
           "Lorem2 ipsum dolor sit amet consectetur adipisicing elit. Sequi fugit qui exercitationem nisi, voluptates amet esse accusantium! Eaque debitis iure quidem nobis praesentium labore ratione, adipisci placeat pariatur doloribus assumenda.",
         date: 1620720167152,
+        liked: true,
       }, */
     ]);
 
@@ -131,19 +142,31 @@ export default defineComponent({
       let newQweet = {
         content: newQweetContent.value,
         date: Date.now(),
+        liked: false,
       };
-      qweets.value.unshift(newQweet);
+      //qweets.value.unshift(newQweet);
+      // Add a new document with a generated id.
+      db.collection("qweets")
+        .add(newQweet)
+        .then((docRef) => {
+          console.log("Document written with ID: ", docRef.id);
+        })
+        .catch((error) => {
+          console.error("Error adding document: ", error);
+        });
       newQweetContent.value = "";
     }
 
     function deleteQweet(qweet) {
-      console.log("delete qweet:", qweet);
-      let dateToDelete = qweet.date;
-      let index = qweets.value.findIndex(
-        (qweet) => qweet.date === dateToDelete
-      );
-      console.log("index:", index);
-      qweets.value.splice(index, 1);
+      db.collection("qweets")
+        .doc(qweet.id)
+        .delete()
+        .then(() => {
+          console.log("Document successfully deleted!");
+        })
+        .catch((error) => {
+          console.error("Error removing document: ", error);
+        });
     }
 
     // laver en function hvor vi via compAPI laver værdien om direkte i funktionen, også kaldes funktionen ved den value.
@@ -152,23 +175,60 @@ export default defineComponent({
       return formatDistance(value, new Date());
     }
 
-    onMounted(() => {
-      db.collection('qweets').onSnapshot((snapshot) => {
-          snapshot.docChanges().forEach((change) => {
-            if (change.type === 'added') {
-              console.log('New qweet: ', change.doc.data())
-            }
-            if (change.type === 'modified') {
-              console.log('Modified qweet: ', change.doc.data())
-            }
-            if (change.type === 'removed') {
-              console.log('Removed city: ', change.doc.data())
-            }
-          })
-        })
-    })
+    function toggleLiked(qweet) {
 
-    return { newQweetContent, qweets, filterTime, addNewQweet, deleteQweet };
+      db.collection('qweets').doc(qweet.id).update({
+          liked: !qweet.liked
+        })
+        .then(() => {
+          console.log('Document successfully updated!');
+        })
+        .catch((error) => {
+          // The document probably doesn't exist.
+          console.error('Error updating document: ', error);
+        });
+    }
+
+    onMounted(() => {
+      db.collection("qweets")
+        .orderBy("date")
+        .onSnapshot((snapshot) => {
+          snapshot.docChanges().forEach((change) => {
+            let qweetChange = change.doc.data();
+            qweetChange.id = change.doc.id;
+            if (change.type === "added") {
+              console.log("New qweet: ", qweetChange);
+              qweets.value.unshift(qweetChange);
+            }
+
+            if (change.type === "modified") {
+              console.log("Modified qweet: ", qweetChange);
+              let index = qweets.value.findIndex(
+                (qweet) => qweet.id === qweetChange.id
+              );
+              Object.assign(qweets.value[index], qweetChange);
+            }
+
+            if (change.type === "removed") {
+              console.log("Removed qweet: ", qweetChange);
+
+              let index = qweets.value.findIndex(
+                (qweet) => qweet.id === qweetChange.id
+              );
+              qweets.value.splice(index, 1);
+            }
+          });
+        });
+    });
+
+    return {
+      newQweetContent,
+      qweets,
+      filterTime,
+      addNewQweet,
+      deleteQweet,
+      toggleLiked,
+    };
   },
 });
 </script>

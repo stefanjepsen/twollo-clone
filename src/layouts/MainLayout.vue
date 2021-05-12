@@ -18,13 +18,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer 
-      v-model="leftDrawerOpen"
-      :width="280"
-      side="left"
-     
-      elevated
-    >
+    <q-drawer v-model="leftDrawerOpen" :width="280" side="left" elevated>
       <!-- drawer content -->
       <q-icon class="q-pa-md" name="fas fa-dove" size="lg" color="primary" />
       <q-list>
@@ -76,7 +70,12 @@
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <!-- Keep alive lader vores sider køre i baggrunden når vi skifter views, så der ikke refreshes mellem skift. -->
+      <router-view v-slot="{ Component }">
+        <keep-alive>
+          <component :is="Component" />
+        </keep-alive>
+      </router-view>
     </q-page-container>
   </q-layout>
 </template>
