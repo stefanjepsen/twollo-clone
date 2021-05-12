@@ -110,32 +110,19 @@
 </template>
 
 <script>
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, onBeforeMount } from "vue";
 // FNS dato formaterer automatisk tidspunktet for os når vi har kørt date.now()
 import { formatDistance } from "date-fns";
 //DB import
 import { db } from "src/boot/firebase.js";
+import firebase from 'firebase';
+import {useRouter, useRoute} from 'vue-router'
 
 export default defineComponent({
   name: "PageHome",
   setup() {
     const newQweetContent = ref("");
-    const qweets = ref([
-      /*       {
-        id: "ID1",
-        content:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi fugit qui exercitationem nisi, voluptates amet esse accusantium! Eaque debitis iure quidem nobis praesentium labore ratione, adipisci placeat pariatur doloribus assumenda.",
-        date: 1620720167152,
-        liked: false,
-      },
-      {
-        id: "ID2",
-        content:
-          "Lorem2 ipsum dolor sit amet consectetur adipisicing elit. Sequi fugit qui exercitationem nisi, voluptates amet esse accusantium! Eaque debitis iure quidem nobis praesentium labore ratione, adipisci placeat pariatur doloribus assumenda.",
-        date: 1620720167152,
-        liked: true,
-      }, */
-    ]);
+    const qweets = ref([]);
 
     //Tilføjer det seneste "qweet i array"
     function addNewQweet() {
@@ -156,7 +143,7 @@ export default defineComponent({
         });
       newQweetContent.value = "";
     }
-
+    //Sletter seneste qweet som bliver trykket på.
     function deleteQweet(qweet) {
       db.collection("qweets")
         .doc(qweet.id)
@@ -175,20 +162,35 @@ export default defineComponent({
       return formatDistance(value, new Date());
     }
 
+    //Farver hjertet rød
     function toggleLiked(qweet) {
-
-      db.collection('qweets').doc(qweet.id).update({
-          liked: !qweet.liked
+      db.collection("qweets")
+        .doc(qweet.id)
+        .update({
+          liked: !qweet.liked,
         })
         .then(() => {
-          console.log('Document successfully updated!');
+          console.log("Document successfully updated!");
         })
         .catch((error) => {
           // The document probably doesn't exist.
-          console.error('Error updating document: ', error);
+          console.error("Error updating document: ", error);
         });
     }
 
+    const router = useRouter()
+    const route = useRoute()
+    onBeforeMount(() => {
+      firebase.auth().onAuthStateChanged((user) => {
+        if (!user) {
+          router.replace("/login")
+        } else if (route.path == "/login" || route.path == "/register") {
+          router.replace("/");
+        }
+      });
+    });
+
+    //On snapshot sørger for at se efter changes hele tiden.
     onMounted(() => {
       db.collection("qweets")
         .orderBy("date")
@@ -228,6 +230,7 @@ export default defineComponent({
       addNewQweet,
       deleteQweet,
       toggleLiked,
+      ref
     };
   },
 });

@@ -6,6 +6,9 @@
 
         <q-toolbar-title class="text-weight-bold">
           <span class="gt-sm">{{ $route.name }}</span>
+
+          <logout  />
+
           <q-icon
             class="q-pa-md lt-md header-icon"
             name="fas fa-dove"
@@ -36,6 +39,35 @@
 
           <q-item-section class="text-h6 text-weight-bold"
             >About</q-item-section
+          >
+        </q-item>
+
+        <q-item to="/login" clickable v-ripple exact>
+          <q-item-section avatar>
+            <q-icon name="login" size="md" />
+          </q-item-section>
+
+          <q-item-section class="text-h6 text-weight-bold"
+            >Login</q-item-section
+          >
+        </q-item>
+
+        <q-item to="/register" clickable v-ripple exact>
+          <q-item-section avatar>
+            <q-icon name="how_to_reg" size="sm" />
+          </q-item-section>
+
+          <q-item-section class="text-h6 text-weight-bold"
+            >Register</q-item-section
+          >
+        </q-item>
+                <q-item to="/test" clickable v-ripple exact>
+          <q-item-section avatar>
+            <q-icon name="how_to_reg" size="sm" />
+          </q-item-section>
+
+          <q-item-section class="text-h6 text-weight-bold"
+            >Test</q-item-section
           >
         </q-item>
       </q-list>
@@ -70,20 +102,25 @@
     </q-drawer>
 
     <q-page-container>
-      <!-- Keep alive lader vores sider køre i baggrunden når vi skifter views, så der ikke refreshes mellem skift. -->
+      <!-- Keep alive lader vores sider køre i baggrunden når vi skifter views, så der ikke refreshes mellem skift. 
       <router-view v-slot="{ Component }">
         <keep-alive>
           <component :is="Component" />
         </keep-alive>
       </router-view>
+      -->
+
+      <router-view></router-view>
     </q-page-container>
   </q-layout>
 </template>
 
 <script>
 import { ref } from "vue";
+import Logout from "src/components/Logout.vue";
 
 export default {
+  components: { Logout },
   setup() {
     const leftDrawerOpen = ref(false);
     const rightDrawerOpen = ref(false);
